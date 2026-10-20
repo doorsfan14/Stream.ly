@@ -27,7 +27,6 @@ document.getElementById("dateStamp").textContent=new Intl.DateTimeFormat(undefin
 renderFeed();
 document.getElementById("topicRow").addEventListener("click",event=>{const button=event.target.closest("[data-topic]");if(!button)return;activeTopic=button.dataset.topic;document.querySelectorAll(".topic").forEach(el=>el.classList.toggle("active",el===button));renderFeed()});
 grid.addEventListener("click",event=>{const play=event.target.closest("[data-play]");if(play){playVideo(play.dataset.play);return}const more=event.target.closest("[data-more]");if(more){const video=videos.find(v=>v.id===Number(more.dataset.more));if(video){savedVideoIds.add(video.id);showToast("Saved to Watch later.");}return}});
-document.getElementById("featuredVideo").addEventListener("click",()=>playVideo(0));
 document.getElementById("searchForm").addEventListener("submit",event=>{event.preventDefault();searchTerm=searchInput.value.trim();renderFeed();document.querySelector(".feed-section").scrollIntoView({behavior:"smooth",block:"start"})});
 searchInput.addEventListener("input",()=>{searchTerm=searchInput.value.trim();renderFeed()});
 document.getElementById("clearSearch").addEventListener("click",()=>{searchInput.value="";searchTerm="";activeTopic="For you";document.querySelectorAll(".topic").forEach(el=>el.classList.toggle("active",el.dataset.topic==="For you"));renderFeed()});
