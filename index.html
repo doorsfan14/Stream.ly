@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#101113">
-<meta name="description" content="A place for videos worth staying for.">
-<title>Stream.ly — Stay curious.</title>
+<meta name="theme-color" content="#f7f7f7">
+<meta name="description" content="Watch videos on Stream.ly.">
+<title>Stream.ly</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -14,52 +14,43 @@
 <body>
 <header class="topbar">
   <div class="brand-area">
-    <button class="icon-button menu-toggle glass-control" id="menuToggle" aria-label="Toggle navigation"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-    <a class="brand" href="#" aria-label="Stream.ly home"><span class="brand-mark"><i></i><i></i><i></i></span><span>stream<span class="brand-dot">.</span>ly</span></a>
+    <button class="icon-button menu-toggle" id="menuToggle" aria-label="Toggle navigation"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+    <a class="brand" href="#" aria-label="Stream.ly home"><span class="brand-mark"><svg viewBox="0 0 24 24"><path d="m9 6 9 6-9 6z"/></svg></span><span>Stream.ly</span></a>
   </div>
-  <form class="search-form glass-control" id="searchForm" role="search"><label class="sr-only" for="searchInput">Search</label><svg class="search-symbol" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.2 4.2"/></svg><input id="searchInput" type="search" placeholder="Find something good…" autocomplete="off"><button aria-label="Search" type="submit"><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></form>
+  <form class="search-form" id="searchForm" role="search"><label class="sr-only" for="searchInput">Search</label><input id="searchInput" type="search" placeholder="Search" autocomplete="off"><button type="submit" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.2 4.2"/></svg></button></form>
   <div class="top-actions">
-    <button class="create-button glass-control" id="createButton"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Publish</span></button>
-    <button class="icon-button glass-control notification-button" id="notificationButton" aria-label="Notifications"><svg viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><i></i></button>
-    <button class="profile-button" id="profileButton" aria-label="Open profile menu"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=96&q=80" alt=""></button>
+    <button class="create-button" id="createButton"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Create</span></button>
+    <button class="icon-button" id="notificationButton" aria-label="Notifications"><svg viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></button>
+    <button class="profile-button" id="profileButton" aria-label="Open account menu"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></button>
   </div>
 </header>
 <aside class="sidebar" id="sidebar">
-  <div class="sidebar-kicker">YOUR SPACE</div>
   <nav class="main-nav" aria-label="Main navigation">
-    <button class="nav-item active" data-nav="Home"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>For you</span></button>
-    <button class="nav-item" data-nav="Explore"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8z"/></svg><span>Discover</span></button>
-    <button class="nav-item" data-nav="Following"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M22 11h-6"/></svg><span>Following</span></button>
-    <button class="nav-item" data-nav="Live"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M9 8v8l7-4z"/></svg><span>Live rooms</span></button>
+    <button class="nav-item active" data-nav="Home"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></button>
+    <button class="nav-item" data-nav="Explore"><svg viewBox="0 0 24 24"><path d="m12 3 2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z"/></svg><span>Explore</span></button>
+    <button class="nav-item" data-nav="Following"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3z"/></svg><span>Subscriptions</span></button>
   </nav>
   <div class="sidebar-rule"></div>
-  <div class="sidebar-kicker">YOUR COLLECTION</div>
-  <nav class="main-nav" aria-label="Your collection">
-    <button class="nav-item" data-nav="Library"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 4v16M12 8h4M12 12h4M12 16h4"/></svg><span>Collection</span></button>
-    <button class="nav-item" data-nav="History"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8M3 3v5h5M12 7v5l3 2"/></svg><span>Recently played</span></button>
-    <button class="nav-item" data-nav="Watch later"><svg viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></svg><span>Saved for later</span></button>
+  <nav class="main-nav" aria-label="Library">
+    <button class="nav-item" data-nav="Library"><svg viewBox="0 0 24 24"><path d="M4 5h16v15H4zM8 3v4M16 3v4"/></svg><span>You</span><svg class="nav-arrow" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
+    <button class="nav-item" data-nav="History"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8M3 3v5h5M12 7v5l3 2"/></svg><span>History</span></button>
+    <button class="nav-item" data-nav="Watch later"><svg viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></svg><span>Watch later</span></button>
   </nav>
-  <div class="sidebar-rule"></div><div class="sidebar-kicker">IN YOUR ORBIT</div>
-  <div class="creator-list">
-    <button class="creator-link" data-creator="Maya Chen"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&q=80" alt=""><span>Maya Chen</span><i></i></button>
-    <button class="creator-link" data-creator="Frame by Frame"><img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80" alt=""><span>Frame by Frame</span><i></i></button>
-    <button class="creator-link" data-creator="Theo's Kitchen"><img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=80&q=80" alt=""><span>Theo's Kitchen</span><i></i></button>
-    <button class="creator-link" data-creator="Northbound"><img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=80&q=80" alt=""><span>Northbound</span><i></i></button>
-  </div>
-  <div class="sidebar-footer">Made for the curious.<span>STREAM.LY © 2026</span></div>
 </aside>
 <main class="main-content" id="mainContent">
-  <section class="welcome-row"><div><p class="section-eyebrow">MONDAY, OCTOBER 19</p><h1 id="feedTitle">A little bit of everything.</h1><p id="feedSubtitle">Fresh perspectives from people worth listening to.</p></div><button class="text-button glass-control" id="refreshButton" aria-label="Refresh feed"><svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M5.6 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 12.4-3"/></svg></button></section>
-  <section class="featured-section" aria-label="Featured video"><button class="featured" id="featuredVideo" data-video="0"><span class="featured-label"><i></i> THE DAILY PICK</span><span class="featured-copy"><span class="featured-overline">GO A LITTLE FURTHER</span><strong>Make room for<br>the unexpected.</strong><span class="featured-cta">Watch the story <b>↗</b></span></span><span class="featured-index">01 <i> / </i> 12</span></button></section>
   <div class="topic-row" id="topicRow" aria-label="Video categories">
-    <span class="topic-heading">EXPLORE BY MOOD</span>
-    <button class="topic active" data-topic="For you">Everything</button><button class="topic" data-topic="Design">Design</button><button class="topic" data-topic="Music">Music</button><button class="topic" data-topic="Gaming">Gaming</button><button class="topic" data-topic="Food">Food</button><button class="topic" data-topic="Outdoors">Outdoors</button><button class="topic" data-topic="Live"><span class="topic-live-dot"></span> Live rooms</button>
+    <button class="topic active" data-topic="For you">All</button><button class="topic" data-topic="Music">Music</button><button class="topic" data-topic="Gaming">Gaming</button><button class="topic" data-topic="Design">Design</button><button class="topic" data-topic="Food">Food</button><button class="topic" data-topic="Outdoors">Travel & outdoors</button><button class="topic" data-topic="Live">Live</button>
   </div>
-  <section class="feed-section"><div class="feed-heading"><div><span class="section-eyebrow">HANDPICKED FOR YOUR CURIOSITY</span><h2>Worth your time<span> ✳</span></h2></div><span class="feed-count">A FEED THAT FEELS LIKE YOU</span></div><div class="video-grid" id="videoGrid"></div><div class="empty-state" id="emptyState" hidden><span class="empty-symbol">⌕</span><h3>Nothing on this frequency.</h3><p>Try another search or explore a different topic.</p><button class="outline-button" id="clearSearch">Reset discovery</button></div></section>
+  <section class="feed-section">
+    <div class="feed-heading"><h1 id="feedTitle">Recommended</h1><span id="dateStamp" class="date-stamp"></span></div>
+    <div class="video-grid" id="videoGrid"></div>
+    <div class="empty-state" id="emptyState" hidden><h3>No videos found</h3><p>Try a different search or category.</p><button class="outline-button" id="clearSearch">Clear search</button></div>
+  </section>
 </main>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<div class="modal-backdrop" id="playerModal" hidden><section class="player-dialog" role="dialog" aria-modal="true" aria-labelledby="playerTitle"><button class="modal-close" data-close="playerModal" aria-label="Close player">×</button><div class="player-stage" id="playerStage"></div><div class="player-info"><div><p class="eyebrow" id="playerCategory">VIDEO</p><h2 id="playerTitle"></h2><p id="playerMeta"></p></div><div class="player-actions"><button class="outline-button" id="likeButton"><span>♡</span> Appreciate</button><button class="outline-button" id="saveButton"><span>＋</span> Save</button></div></div><p class="player-description" id="playerDescription"></p><div class="player-creator" id="playerCreator"></div></section></div>
-<div class="modal-backdrop" id="createModal" hidden><section class="create-dialog" role="dialog" aria-modal="true" aria-labelledby="createTitle"><button class="modal-close" data-close="createModal" aria-label="Close upload dialog">×</button><h2 id="createTitle">Put something out there.</h2><p class="create-intro">Your perspective belongs here.</p><form id="uploadForm"><label class="upload-drop" for="videoFile"><svg viewBox="0 0 24 24"><path d="M12 16V4m-5 5 5-5 5 5M4 16v4h16v-4"/></svg><strong id="fileLabel">Choose a video</strong><span>MP4, MOV, or WebM</span><input id="videoFile" type="file" accept="video/mp4,video/quicktime,video/webm,video/*" required></label><label class="field-label" for="videoTitleInput">Give it a title</label><input class="text-field" id="videoTitleInput" maxlength="100" placeholder="What's the story?" required><label class="field-label" for="videoCategoryInput">Find its corner</label><select class="text-field" id="videoCategoryInput"><option>Design</option><option>Music</option><option>Gaming</option><option>Food</option><option>Outdoors</option><option>Other</option></select><button class="publish-button" type="submit">Publish video ↗</button><p class="upload-note">Uploads stay in this browser session. Persistent publishing needs a video-hosting backend.</p></form></section></div>
+<div class="modal-backdrop" id="playerModal" hidden><section class="player-dialog" role="dialog" aria-modal="true" aria-labelledby="playerTitle"><button class="modal-close" data-close="playerModal" aria-label="Close player">×</button><div class="player-stage" id="playerStage"></div><div class="player-info"><div><p class="eyebrow" id="playerCategory">VIDEO</p><h2 id="playerTitle"></h2><p id="playerMeta"></p></div><div class="player-actions"><button class="outline-button" id="likeButton"><span>♡</span> Like</button><button class="outline-button" id="saveButton"><span>＋</span> Save</button></div></div><p class="player-description" id="playerDescription"></p><div class="player-creator" id="playerCreator"></div></section></div>
+<div class="modal-backdrop" id="createModal" hidden><section class="create-dialog" role="dialog" aria-modal="true" aria-labelledby="createTitle"><button class="modal-close" data-close="createModal" aria-label="Close upload dialog">×</button><h2 id="createTitle">Upload video</h2><form id="uploadForm"><label class="upload-drop" for="videoFile"><svg viewBox="0 0 24 24"><path d="M12 16V4m-5 5 5-5 5 5M4 16v4h16v-4"/></svg><strong id="fileLabel">Select a video file</strong><span>MP4, MOV, or WebM</span><input id="videoFile" type="file" accept="video/mp4,video/quicktime,video/webm,video/*" required></label><label class="field-label" for="videoTitleInput">Title</label><input class="text-field" id="videoTitleInput" maxlength="100" placeholder="Add a title" required><label class="field-label" for="videoCategoryInput">Category</label><select class="text-field" id="videoCategoryInput"><option>Gaming</option><option>Music</option><option>Design</option><option>Food</option><option>Outdoors</option><option>Other</option></select><button class="publish-button" type="submit">Publish</button><p class="upload-note">Videos are available in this browser session only.</p></form></section></div>
 <div class="popover-menu" id="profileMenu" hidden><button data-menu-action="Your channel">Your channel</button><button data-menu-action="Settings">Settings</button><button data-menu-action="Sign in">Sign in</button></div>
 <script src="app.js"></script>
-</body></html>
+</body>
+</html>
