@@ -4,6 +4,7 @@
   if (!page) return;
 
   const MAX_GLASS = 12;
+  const MAX_TEXTURE_SIZE = 4096;
   const canvas = document.createElement("canvas");
   canvas.id = "liquidGlassCanvas";
   canvas.setAttribute("aria-hidden", "true");
@@ -12,6 +13,7 @@
 
   let renderer;
   let backdropTexture;
+  let searchBackdropTexture;
   let frame = 0;
   let captureFrame = 0;
   let capturing = false;
@@ -26,6 +28,7 @@
   const blank = document.createElement("canvas");
   blank.width = blank.height = 2;
   backdropTexture = new THREE.CanvasTexture(blank);
+  searchBackdropTexture = new THREE.CanvasTexture(blank);
 
   try {
     renderer = new THREE.WebGLRenderer({
@@ -43,11 +46,18 @@
 
     const uniforms = {
       uBackdrop: { value: backdropTexture },
+      uSearchBackdrop: { value: searchBackdropTexture },
       uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+      uDocumentResolution: { value: new THREE.Vector2(
+        Math.max(document.documentElement.scrollWidth, document.body.scrollWidth, window.innerWidth),
+        Math.max(document.documentElement.scrollHeight, document.body.scrollHeight, window.innerHeight)
+      ) },
+      uScroll: { value: new THREE.Vector2(window.scrollX, window.scrollY) },
       uTime: { value: 0 },
       uCount: { value: 0 },
       uRects: { value: Array.from({ length: MAX_GLASS }, () => new THREE.Vector4()) },
-      uRadii: { value: new Float32Array(MAX_GLASS) }
+      uRadii: { value: new Float32Array(MAX_GLASS) },
+      uKinds: { value: new Float32Array(MAX_GLASS) }
     };
 
     const material = new THREE.ShaderMaterial({
@@ -66,11 +76,15 @@
         precision highp float;
         #define MAX_GLASS 12
         uniform sampler2D uBackdrop;
+        uniform sampler2D uSearchBackdrop;
         uniform vec2 uResolution;
+        uniform vec2 uDocumentResolution;
+        uniform vec2 uScroll;
         uniform float uTime;
         uniform int uCount;
         uniform vec4 uRects[MAX_GLASS];
         uniform float uRadii[MAX_GLASS];
+        uniform float uKinds[MAX_GLASS];
         varying vec2 vUv;
 
         float roundedSdf(vec2 p, vec2 b, float r) {
@@ -82,6 +96,7 @@
           vec2 screen = vec2(vUv.x * uResolution.x, (1.0 - vUv.y) * uResolution.y);
           vec4 rect = vec4(0.0);
           float radius = 0.0;
+          float kind = 1.0;
           float distanceToEdge = 9999.0;
           bool insideGlass = false;
 
@@ -94,6 +109,7 @@
             if (d <= 0.8) {
               rect = candidate;
               radius = uRadii[i];
+              kind = uKinds[i];
               distanceToEdge = d;
               insideGlass = true;
               break;
@@ -111,8 +127,7 @@
             roundedSdf(centered + vec2(1.0, 0.0), halfSize, radius) - roundedSdf(centered - vec2(1.0, 0.0), halfSize, radius),
             roundedSdf(centered + vec2(0.0, 1.0), halfSize, radius) - roundedSdf(centered - vec2(0.0, 1.0), halfSize, radius)
           );
-          float normalLength = max(length(gradient), 0.0001);
-          vec2 normal = gradient / normalLength;
+          vec2 normal = gradient / max(length(gradient), 0.0001);
           float coverage = 1.0 - smoothstep(-0.8, 0.8, distanceToEdge);
           float edge = smoothstep(-8.0, -0.5, distanceToEdge);
           float lens = 1.0 - smoothstep(0.0, max(halfSize.x, halfSize.y), length(centered));
@@ -122,21 +137,40 @@
           ) * 0.72;
           vec2 radial = centered / max(halfSize, vec2(1.0));
           vec2 bend = normal * (1.15 + edge * 3.4) + ripple * (0.45 + lens * 0.8) + radial * 0.9;
-          vec2 uv = vUv + vec2(bend.x / uResolution.x, -bend.y / uResolution.y);
-          vec2 fringe = vec2(normal.x / uResolution.x, -normal.y / uResolution.y) * edge * 1.15;
+          vec2 documentPoint = screen + uScroll;
+          vec2 baseUv = vec2(
+            documentPoint.x / uDocumentResolution.x,
+            1.0 - documentPoint.y / uDocumentResolution.y
+          );
+          vec2 uv = baseUv + vec2(
+            bend.x / uDocumentResolution.x,
+            -bend.y / uDocumentResolution.y
+          );
+          vec2 fringe = vec2(
+            normal.x / uDocumentResolution.x,
+            -normal.y / uDocumentResolution.y
+          ) * edge * 1.15;
 
-          vec4 redSample = texture2D(uBackdrop, uv + fringe);
-          vec4 greenSample = texture2D(uBackdrop, uv);
-          vec4 blueSample = texture2D(uBackdrop, uv - fringe);
+          vec4 redSample;
+          vec4 greenSample;
+          vec4 blueSample;
+          if (kind < 0.5) {
+            redSample = texture2D(uSearchBackdrop, uv + fringe);
+            greenSample = texture2D(uSearchBackdrop, uv);
+            blueSample = texture2D(uSearchBackdrop, uv - fringe);
+          } else {
+            redSample = texture2D(uBackdrop, uv + fringe);
+            greenSample = texture2D(uBackdrop, uv);
+            blueSample = texture2D(uBackdrop, uv - fringe);
+          }
+
           vec3 color = vec3(redSample.r, greenSample.g, blueSample.b);
-
           vec2 keyLight = normalize(vec2(-0.66, -0.75));
           vec2 fillLight = normalize(vec2(0.72, 0.69));
           float specular = pow(max(dot(normal, keyLight), 0.0), 5.0) * edge;
           float lowerRim = pow(max(dot(normal, fillLight), 0.0), 7.0) * edge;
           float glintPosition = sin(uTime * 0.42) * halfSize.x * 0.55;
           float glint = pow(max(0.0, 1.0 - abs(centered.x - glintPosition) / 2.5), 14.0) * edge * 0.18;
-
           color = mix(color, vec3(1.0, 0.965, 0.985), 0.065 + edge * 0.08);
           color += vec3(1.0, 0.95, 0.99) * (specular * 0.72 + lowerRim * 0.2 + glint);
           gl_FragColor = vec4(color, coverage);
@@ -146,6 +180,11 @@
 
     scene.add(new THREE.Mesh(geometry, material));
     document.body.classList.add("glass-ready");
+
+    const getDocumentSize = () => ({
+      width: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth, window.innerWidth),
+      height: Math.max(document.documentElement.scrollHeight, document.body.scrollHeight, window.innerHeight)
+    });
 
     const refreshTargets = () => {
       const next = [...document.querySelectorAll(".search, .video, .account")].sort((a, b) => {
@@ -172,13 +211,26 @@
         if (!box.width || !box.height) continue;
         uniforms.uRects.value[count].set(box.left, box.top, box.width, box.height);
         uniforms.uRadii.value[count] = targetRadii[i] || 0;
+        uniforms.uKinds.value[count] = targets[i].matches(".search") ? 0 : 1;
         count++;
       }
       for (let i = count; i < MAX_GLASS; i++) {
         uniforms.uRects.value[i].set(0, 0, 0, 0);
         uniforms.uRadii.value[i] = 0;
+        uniforms.uKinds.value[i] = 1;
       }
       uniforms.uCount.value = count;
+    };
+
+    const buildTexture = screenshot => {
+      const texture = new THREE.CanvasTexture(screenshot);
+      if ("colorSpace" in texture && THREE.SRGBColorSpace) texture.colorSpace = THREE.SRGBColorSpace;
+      else if ("encoding" in texture && THREE.sRGBEncoding) texture.encoding = THREE.sRGBEncoding;
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.generateMipmaps = false;
+      texture.needsUpdate = true;
+      return texture;
     };
 
     const queueBackdrop = () => {
@@ -195,42 +247,54 @@
       queueBackdrop();
     };
 
+    const capturePage = async (width, height, scale, searchSurface) => window.html2canvas(document.documentElement, {
+      backgroundColor: null,
+      scale,
+      width,
+      height,
+      windowWidth: window.innerWidth,
+      windowHeight: window.innerHeight,
+      scrollX: 0,
+      scrollY: 0,
+      useCORS: true,
+      logging: false,
+      ignoreElements: element => {
+        if (element.id === "liquidGlassCanvas" || element.id === "status") return true;
+        if (searchSurface) return Boolean(element.closest?.(".search, .account"));
+        return Boolean(element.closest?.(".glass-target"));
+      }
+    });
+
     const updateBackdrop = async () => {
       if (capturing || !captureDirty) return;
       capturing = true;
       captureDirty = false;
       const version = changeVersion;
+      const { width, height } = getDocumentSize();
+      const scale = Math.min(renderer.getPixelRatio(), 1.25, MAX_TEXTURE_SIZE / Math.max(width, height));
       try {
-        const screenshot = await window.html2canvas(document.documentElement, {
-          backgroundColor: null,
-          scale: Math.min(renderer.getPixelRatio(), 1.25),
-          width: window.innerWidth,
-          height: window.innerHeight,
-          windowWidth: window.innerWidth,
-          windowHeight: window.innerHeight,
-          scrollX: -window.scrollX,
-          scrollY: -window.scrollY,
-          useCORS: true,
-          logging: false,
-          ignoreElements: element =>
-            element.id === "liquidGlassCanvas" ||
-            Boolean(element.closest?.(".glass-target"))
-        });
-        if (version === changeVersion) {
-          const nextTexture = new THREE.CanvasTexture(screenshot);
-          if ("colorSpace" in nextTexture && THREE.SRGBColorSpace) nextTexture.colorSpace = THREE.SRGBColorSpace;
-          else if ("encoding" in nextTexture && THREE.sRGBEncoding) nextTexture.encoding = THREE.sRGBEncoding;
-          nextTexture.minFilter = THREE.LinearFilter;
-          nextTexture.magFilter = THREE.LinearFilter;
-          nextTexture.generateMipmaps = false;
-          nextTexture.needsUpdate = true;
-          uniforms.uBackdrop.value = nextTexture;
-          const previous = backdropTexture;
-          backdropTexture = nextTexture;
-          previous.dispose();
-        } else {
+        const mainScreenshot = await capturePage(width, height, scale, false);
+        if (version !== changeVersion) {
           captureDirty = true;
+          return;
         }
+        const searchScreenshot = await capturePage(width, height, scale, true);
+        if (version !== changeVersion) {
+          captureDirty = true;
+          return;
+        }
+
+        const nextTexture = buildTexture(mainScreenshot);
+        const nextSearchTexture = buildTexture(searchScreenshot);
+        uniforms.uBackdrop.value = nextTexture;
+        uniforms.uSearchBackdrop.value = nextSearchTexture;
+        uniforms.uDocumentResolution.value.set(width, height);
+        const previous = backdropTexture;
+        const previousSearch = searchBackdropTexture;
+        backdropTexture = nextTexture;
+        searchBackdropTexture = nextSearchTexture;
+        previous.dispose();
+        previousSearch.dispose();
       } catch (error) {
         console.warn("Stream.ly liquid glass could not refresh its background.", error);
       } finally {
@@ -253,6 +317,7 @@
         frame = 0;
         return;
       }
+      uniforms.uScroll.value.set(window.scrollX, window.scrollY);
       if (!reducedMotion) uniforms.uTime.value = time * 0.001;
       updateRects();
       renderer.render(scene, camera);
@@ -260,22 +325,7 @@
     };
 
     const observer = new MutationObserver(records => {
-      let layoutChanged = false;
-      for (const record of records) {
-        if (record.type === "childList") {
-          layoutChanged = true;
-          break;
-        }
-        if (record.type === "characterData") {
-          layoutChanged = true;
-          break;
-        }
-        if (record.type === "attributes") {
-          layoutChanged = true;
-          break;
-        }
-      }
-      if (layoutChanged) {
+      if (records.length) {
         refreshTargets();
         markChanged();
       }
@@ -292,15 +342,8 @@
     window.addEventListener("resize", resize, { passive: true });
     window.addEventListener("scroll", () => {
       canvas.style.top = window.scrollY + "px";
+      uniforms.uScroll.value.set(window.scrollX, window.scrollY);
       updateRects();
-      markChanged();
-    }, { passive: true });
-    document.addEventListener("input", markChanged, { passive: true });
-    document.addEventListener("click", () => {
-      window.requestAnimationFrame(() => {
-        refreshTargets();
-        markChanged();
-      });
     }, { passive: true });
     window.addEventListener("load", markChanged, { once: true });
     window.addEventListener("pageshow", markChanged);
