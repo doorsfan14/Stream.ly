@@ -18,7 +18,6 @@
 
   let renderer;
   let backdropTexture;
-  let searchBackdropTexture;
   let searchOverlayContext = null;
   let previousSearchRect = null;
   let frame = 0;
@@ -36,7 +35,6 @@
   const blank = document.createElement("canvas");
   blank.width = blank.height = 2;
   backdropTexture = new THREE.CanvasTexture(blank);
-  searchBackdropTexture = new THREE.CanvasTexture(blank);
 
   try {
     renderer = new THREE.WebGLRenderer({
@@ -58,7 +56,6 @@
 
     const uniforms = {
       uBackdrop: { value: backdropTexture },
-      uSearchBackdrop: { value: searchBackdropTexture },
       uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
       uDocumentResolution: { value: new THREE.Vector2(
         Math.max(document.documentElement.scrollWidth, document.body.scrollWidth, window.innerWidth),
@@ -86,7 +83,6 @@
       fragmentShader: `
         precision highp float;
         uniform sampler2D uBackdrop;
-        uniform sampler2D uSearchBackdrop;
         uniform vec2 uResolution;
         uniform vec2 uDocumentResolution;
         uniform vec2 uScroll;
@@ -139,18 +135,9 @@
             -normal.y / uDocumentResolution.y
           ) * edge * 1.15;
 
-          vec4 redSample;
-          vec4 greenSample;
-          vec4 blueSample;
-          if (uKind < 0.5) {
-            redSample = texture2D(uSearchBackdrop, uv + fringe);
-            greenSample = texture2D(uSearchBackdrop, uv);
-            blueSample = texture2D(uSearchBackdrop, uv - fringe);
-          } else {
-            redSample = texture2D(uBackdrop, uv + fringe);
-            greenSample = texture2D(uBackdrop, uv);
-            blueSample = texture2D(uBackdrop, uv - fringe);
-          }
+          vec4 redSample = texture2D(uBackdrop, uv + fringe);
+          vec4 greenSample = texture2D(uBackdrop, uv);
+          vec4 blueSample = texture2D(uBackdrop, uv - fringe);
 
           vec3 color = vec3(redSample.r, greenSample.g, blueSample.b);
           vec2 keyLight = normalize(vec2(-0.66, -0.75));
@@ -161,7 +148,7 @@
           float glint = pow(max(0.0, 1.0 - abs(centered.x - glintPosition) / 2.5), 14.0) * edge * 0.18;
           color = mix(color, vec3(1.0, 0.965, 0.985), 0.065 + edge * 0.08);
           color += vec3(1.0, 0.95, 0.99) * (specular * 0.72 + lowerRim * 0.2 + glint);
-          gl_FragColor = vec4(color, coverage);
+          gl_FragColor = vec4(color, coverage * 0.72);
         }
       `
     });
@@ -235,7 +222,7 @@
       queueBackdrop();
     };
 
-    const capturePage = async (width, height, scale, searchSurface) => window.html2canvas(document.documentElement, {
+    const capturePage = async (width, height, scale) => window.html2canvas(document.documentElement, {
       backgroundColor: null,
       scale,
       width,
@@ -260,28 +247,18 @@
       const { width, height } = getDocumentSize();
       const scale = Math.min(renderer.getPixelRatio(), 1.25, MAX_TEXTURE_SIZE / Math.max(width, height));
       try {
-        const mainScreenshot = await capturePage(width, height, scale, false);
-        if (version !== changeVersion) {
-          captureDirty = true;
-          return;
-        }
-        const searchScreenshot = await capturePage(width, height, scale, true);
+        const screenshot = await capturePage(width, height, scale);
         if (version !== changeVersion) {
           captureDirty = true;
           return;
         }
 
-        const nextTexture = buildTexture(mainScreenshot);
-        const nextSearchTexture = buildTexture(searchScreenshot);
+        const nextTexture = buildTexture(screenshot);
         uniforms.uBackdrop.value = nextTexture;
-        uniforms.uSearchBackdrop.value = nextSearchTexture;
         uniforms.uDocumentResolution.value.set(width, height);
         const previous = backdropTexture;
-        const previousSearch = searchBackdropTexture;
         backdropTexture = nextTexture;
-        searchBackdropTexture = nextSearchTexture;
         previous.dispose();
-        previousSearch.dispose();
       } catch (error) {
         console.warn("Stream.ly liquid glass could not refresh its background.", error);
       } finally {
@@ -356,7 +333,7 @@
 
         uniforms.uRect.value.set(target.left, target.top, target.width, target.height);
         uniforms.uRadius.value = target.radius;
-        uniforms.uKind.value = 0;
+  
         renderer.setScissor(left, window.innerHeight - bottom, right - left, bottom - top);
         renderer.render(scene, camera);
       }
