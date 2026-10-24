@@ -349,19 +349,18 @@
       renderer.setScissorTest(false);
       renderer.clear(true, true, true);
       renderer.setScissorTest(true);
-      const ratio = renderer.getPixelRatio();
       for (let i = visibleTargets.length - 1; i >= 0; i--) {
         const target = visibleTargets[i];
-        const left = Math.max(0, Math.floor(target.left * ratio) - 1);
-        const top = Math.max(0, Math.floor(target.top * ratio) - 1);
-        const right = Math.min(canvas.width, Math.ceil(target.right * ratio) + 1);
-        const bottom = Math.min(canvas.height, Math.ceil(target.bottom * ratio) + 1);
+        const left = Math.max(0, Math.floor(target.left) - 1);
+        const top = Math.max(0, Math.floor(target.top) - 1);
+        const right = Math.min(window.innerWidth, Math.ceil(target.right) + 1);
+        const bottom = Math.min(window.innerHeight, Math.ceil(target.bottom) + 1);
         if (right <= left || bottom <= top) continue;
 
         uniforms.uRect.value.set(target.left, target.top, target.width, target.height);
         uniforms.uRadius.value = target.radius;
         uniforms.uKind.value = target.kind;
-        renderer.setScissor(left, canvas.height - bottom, right - left, bottom - top);
+        renderer.setScissor(left, window.innerHeight - bottom, right - left, bottom - top);
         renderer.render(scene, camera);
       }
       renderer.setScissorTest(false);
