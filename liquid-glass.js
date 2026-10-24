@@ -61,7 +61,6 @@
       uScroll: { value: new THREE.Vector2(window.scrollX, window.scrollY) },
       uRect: { value: new THREE.Vector4() },
       uRadius: { value: 0 },
-      uKind: { value: 1 },
       uTime: { value: 0 }
     };
 
@@ -85,7 +84,6 @@
         uniform vec2 uScroll;
         uniform vec4 uRect;
         uniform float uRadius;
-        uniform float uKind;
         uniform float uTime;
         varying vec2 vUv;
 
@@ -159,9 +157,7 @@
     });
 
     const refreshTargets = () => {
-      const next = [...document.querySelectorAll(".search")].sort((a, b) => {
-        return 0;
-      });
+      const next = [...document.querySelectorAll(".search")];
       for (const element of targets) {
         if (!next.includes(element)) element.classList.remove("glass-target");
       }
@@ -188,8 +184,7 @@
           bottom: box.bottom,
           width: box.width,
           height: box.height,
-          radius: targetRadii[i] || 0,
-          kind: 0
+          radius: targetRadii[i] || 0
         });
       }
     };
