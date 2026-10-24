@@ -3,60 +3,69 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#fff4f8">
-<meta name="description" content="Stream.ly — videos worth your time.">
+<meta name="theme-color" content="#ffb0c8">
+<meta name="description" content="Stream.ly">
 <title>Stream.ly</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <main class="page">
-  <header class="header">
-    <a class="logo" href="#" aria-label="Stream.ly home">Stream.ly<span class="logo-dot"></span></a>
-    <nav class="feed-tabs" aria-label="Feed">
-      <button class="tab active" data-feed="For You">For You</button>
-      <button class="tab" data-feed="Following">Following</button>
-    </nav>
-    <button class="account" id="accountButton" aria-label="Account">
-      <span class="welcome">Welcome back, Habib.</span>
-      <span class="avatar" aria-hidden="true"></span>
-    </button>
-  </header>
+  <a class="logo" href="#" aria-label="Stream.ly home">Stream.ly<img class="logo-dot" src="assets/logo-dot.png" alt=""></a>
+
+  <nav class="feed-tabs" aria-label="Feed">
+    <button class="tab for-you active" data-feed="For You" aria-pressed="true">For You</button>
+    <button class="tab following" data-feed="Following" aria-pressed="false">Following</button>
+  </nav>
+
+  <button class="account" id="accountButton" aria-label="Account">
+    <span class="welcome">Welcome back, Habib.</span>
+    <img class="avatar" src="assets/avatar.png" alt="">
+  </button>
+
   <section class="videos" id="videos" aria-label="Videos">
-    <article class="video" data-title="My dog pooped on my bed so I made..." data-creator="@ifailmygrades125" data-feed="For You">
-      <button class="thumbnail" aria-label="My dog pooped on my bed so I made..."></button>
-      <h2>My dog pooped on my bed so I made...</h2><p>@ifailmygrades125</p>
+    <article class="video dog" data-title="My dog pooped on my bed so I made..." data-creator="@ifailmygrades125" data-feed="For You">
+      <button class="thumbnail" aria-label="Play: My dog pooped on my bed so I made..."></button>
+      <h2>My dog pooped on my bed so I made...</h2>
+      <p>@ifailmygrades125</p>
     </article>
-    <article class="video" data-title="How to install Arch Linux on a chrome..." data-creator="@TechRandom" data-feed="For You">
-      <button class="thumbnail" aria-label="How to install Arch Linux on a chrome..."></button>
-      <h2>How to install Arch Linux on a chrome...</h2><p>@TechRandom</p>
+    <article class="video luau" data-title="Luau tutorial Part 2-10 | How to make a..." data-creator="@robloxplayer12" data-feed="For You">
+      <button class="thumbnail" aria-label="Play: Luau tutorial Part 2-10 | How to make a..."></button>
+      <h2>Luau tutorial Part 2-10 | How to make a...</h2>
+      <p>@robloxplayer12</p>
     </article>
-    <article class="video" data-title="Luau tutorial Part 2-10 | How to make a..." data-creator="@robloxplayer12" data-feed="For You">
-      <button class="thumbnail" aria-label="Luau tutorial Part 2-10 | How to make a..."></button>
-      <h2>Luau tutorial Part 2-10 | How to make a...</h2><p>@robloxplayer12</p>
+    <article class="video iphone" data-title="I tried 20 fake iPhones from temu and t..." data-creator="@techgirl09" data-feed="For You">
+      <button class="thumbnail" aria-label="Play: I tried 20 fake iPhones from temu and t..."></button>
+      <h2>I tried 20 fake iPhones from temu and t...</h2>
+      <p>@techgirl09</p>
     </article>
-    <article class="video" data-title="I tried 20 fake iPhones from temu and t..." data-creator="@techgirl09" data-feed="For You">
-      <button class="thumbnail" aria-label="I tried 20 fake iPhones from temu and t..."></button>
-      <h2>I tried 20 fake iPhones from temu and t...</h2><p>@techgirl09</p>
+    <article class="video arch" data-title="How to install Arch Linux on a chrome..." data-creator="@TechRandom" data-feed="For You">
+      <button class="thumbnail" aria-label="Play: How to install Arch Linux on a chrome..."></button>
+      <h2>How to install Arch Linux on a chrome...</h2>
+      <p>@TechRandom</p>
     </article>
-    <article class="video" data-title="I made brand logos less minimalistic a..." data-creator="@DesignerFigmaDude" data-feed="For You">
-      <button class="thumbnail" aria-label="I made brand logos less minimalistic a..."></button>
-      <h2>I made brand logos less minimalistic a...</h2><p>@DesignerFigmaDude</p>
+    <article class="video logos" data-title="I made brand logos less minimalistic a..." data-creator="@DesignerFigmaDude" data-feed="For You">
+      <button class="thumbnail" aria-label="Play: I made brand logos less minimalistic a..."></button>
+      <h2>I made brand logos less minimalistic a...</h2>
+      <p>@DesignerFigmaDude</p>
     </article>
-    <article class="video" data-title="How to fix your iPhone With Rice from..." data-creator="@IndianTech" data-feed="For You">
-      <button class="thumbnail" aria-label="How to fix your iPhone With Rice from..."></button>
-      <h2>How to fix your iPhone With Rice from...</h2><p>@IndianTech</p>
+    <article class="video rice" data-title="How to fix your iPhone With Rice from..." data-creator="@IndianTech" data-feed="For You">
+      <button class="thumbnail" aria-label="Play: How to fix your iPhone With Rice from..."></button>
+      <h2>How to fix your iPhone With Rice from...</h2>
+      <p>@IndianTech</p>
     </article>
   </section>
+
   <form class="search" id="searchForm" role="search">
     <label class="sr-only" for="searchInput">Search on Stream.ly</label>
     <input id="searchInput" type="search" placeholder="Search on stream.ly..." autocomplete="off">
-    <span class="sparkle" aria-hidden="true">✦</span>
+    <img class="stars" src="assets/stars.png" alt="">
     <button type="submit">Search</button>
   </form>
-  <p class="status" id="status" role="status" aria-live="polite"></p>
+
+  <p class="status" id="status" role="status" aria-live="polite" hidden></p>
 </main>
 <script src="app.js"></script>
 </body>
