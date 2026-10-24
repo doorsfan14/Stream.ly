@@ -1,11 +1,14 @@
 (() => {
   if (!window.THREE || !window.html2canvas) return;
+  const page = document.querySelector(".page");
+  if (!page) return;
 
   const MAX_GLASS = 12;
   const canvas = document.createElement("canvas");
   canvas.id = "liquidGlassCanvas";
   canvas.setAttribute("aria-hidden", "true");
-  document.body.appendChild(canvas);
+  page.prepend(canvas);
+  canvas.style.top = window.scrollY + "px";
 
   let renderer;
   let backdropTexture;
@@ -240,6 +243,7 @@
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
       renderer.setSize(window.innerWidth, window.innerHeight, false);
       uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+      canvas.style.top = window.scrollY + "px";
       refreshTargets();
       markChanged();
     };
@@ -287,6 +291,7 @@
 
     window.addEventListener("resize", resize, { passive: true });
     window.addEventListener("scroll", () => {
+      canvas.style.top = window.scrollY + "px";
       updateRects();
       markChanged();
     }, { passive: true });
