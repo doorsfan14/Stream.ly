@@ -10,6 +10,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #ff657c;outline-offse
 .logo-dot{position:absolute;left:15.8333333cqi;top:1.1458333cqi;width:.625cqi;height:.625cqi;display:block}
 .feed-tabs{position:absolute;inset:0}
 .tab{position:absolute;display:flex;align-items:center;height:2.65625cqi;border:0;border-radius:900px;background:transparent;padding:0;font-size:1.5625cqi;font-weight:400;line-height:normal;white-space:nowrap}
+.for-you.active{background:rgba(255,255,255,.2)}
 .for-you{left:20.5208333cqi;top:4.0104167cqi;width:7.8645833cqi;padding-left:1.1979167cqi}
 .following{left:30cqi;top:4.0104167cqi;width:10.4166667cqi}
 .account{position:absolute;left:75.78125cqi;top:2.5520833cqi;width:21.09375cqi;height:5.78125cqi;padding:0;border:0;border-radius:5.2083333cqi;background:rgba(255,255,255,.1);text-align:left}
@@ -28,13 +29,13 @@ button:focus-visible,input:focus-visible{outline:2px solid #ff657c;outline-offse
 .luau h2,.iphone h2,.logos h2,.rice h2{width:24.53125cqi}
 .video p{position:absolute;left:0;top:15.6770833cqi;width:7.96875cqi;height:1.0416667cqi;margin:0;padding:0;color:rgba(0,0,0,.45);font-size:.8333333cqi;font-weight:600;line-height:normal;white-space:nowrap}
 .logos p{width:9.3229167cqi}
-.search{position:absolute;left:25.4166667cqi;top:48.75cqi;width:48.4375cqi;height:2.7604167cqi;margin:0;padding:0;border:0;border-radius:52.0833333cqi;background:rgba(255,255,255,.15)}
+.search{position:absolute;left:25.4166667cqi;top:48.75cqi;width:48.4375cqi;height:2.7604167cqi;margin:0;padding:0;border:1px solid rgba(255,255,255,.65);border-radius:52.0833333cqi;background:rgba(255,255,255,.15)}
 .search input{position:absolute;left:.6770833cqi;top:0;width:8.8020833cqi;height:100%;margin:0;padding:0;border:0;outline:0;background:transparent;font-size:.8333333cqi;font-weight:600;line-height:normal;appearance:none;-webkit-appearance:none}
 .search input::placeholder{color:#000;opacity:1}
 .search input::-webkit-search-cancel-button,.search input::-webkit-search-decoration{-webkit-appearance:none}
 .stars{position:absolute;left:9.21875cqi;top:.5729167cqi;width:1.4131374cqi;height:1.603857cqi;display:block;pointer-events:none}
-.search button{position:absolute;left:42.7604167cqi;top:.7291667cqi;width:4.6354167cqi;height:1.25cqi;margin:0;padding:0;display:flex;align-items:center;justify-content:center;border:0;border-radius:5.2083333cqi;background:rgba(255,255,255,.2);font-size:.625cqi;font-weight:600;line-height:normal}
-.status{position:absolute;left:50%;top:50.8cqi;transform:translateX(-50%);margin:0;color:rgba(0,0,0,.65);font-size:.7291667cqi;line-height:normal;white-space:nowrap}
+.search button{position:absolute;left:42.7604167cqi;top:.7291667cqi;width:4.6354167cqi;height:1.25cqi;margin:0;padding:0;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.7);border-radius:5.2083333cqi;background:rgba(255,255,255,.2);font-size:.625cqi;font-weight:600;line-height:normal}
+.status{position:absolute;left:50%;top:51.7cqi;transform:translateX(-50%);margin:0;color:rgba(0,0,0,.65);font-size:.7291667cqi;line-height:normal;white-space:nowrap}
 .status[hidden]{display:none}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .video[hidden]{display:none}
