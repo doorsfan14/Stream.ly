@@ -369,7 +369,11 @@
     };
 
     const observer = new MutationObserver(records => {
-      if (records.length) {
+      const meaningful = records.some(record => {
+        const node = record.target.nodeType === 1 ? record.target : record.target.parentElement;
+        return !node?.closest?.(".search, .account, .status, #liquidGlassCanvas, #liquidGlassSearchOverlay");
+      });
+      if (meaningful) {
         refreshTargets();
         markChanged();
       }
@@ -397,7 +401,11 @@
         if (!frame) frame = window.requestAnimationFrame(render);
       }
     });
-    document.addEventListener("load", markChanged, true);
+    document.addEventListener("load", event => {
+      const node = event.target;
+      if (node?.closest?.(".search, .account, .status")) return;
+      markChanged();
+    }, true);
 
     if (document.fonts?.ready) document.fonts.ready.then(markChanged);
     refreshTargets();
