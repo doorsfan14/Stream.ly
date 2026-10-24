@@ -12,7 +12,9 @@
   const searchOverlayCanvas = document.createElement("canvas");
   searchOverlayCanvas.id = "liquidGlassSearchOverlay";
   searchOverlayCanvas.setAttribute("aria-hidden", "true");
-  document.body.appendChild(searchOverlayCanvas);
+  const searchForm = document.querySelector(".search");
+  if (!searchForm) return;
+  searchForm.prepend(searchOverlayCanvas);
 
   let renderer;
   let backdropTexture;
@@ -173,9 +175,8 @@
     });
 
     const refreshTargets = () => {
-      const next = [...document.querySelectorAll(".search, .video, .account")].sort((a, b) => {
-        const priority = element => element.matches(".search") ? 0 : element.matches(".account") ? 1 : 2;
-        return priority(a) - priority(b);
+      const next = [...document.querySelectorAll(".search")].sort((a, b) => {
+        return 0;
       });
       for (const element of targets) {
         if (!next.includes(element)) element.classList.remove("glass-target");
@@ -204,7 +205,7 @@
           width: box.width,
           height: box.height,
           radius: targetRadii[i] || 0,
-          kind: targets[i].matches(".search") ? 0 : 1
+          kind: 0
         });
       }
     };
@@ -247,8 +248,7 @@
       logging: false,
       ignoreElements: element => {
         if (element.id === "liquidGlassCanvas" || element.id === "liquidGlassSearchOverlay" || element.id === "status") return true;
-        if (searchSurface) return Boolean(element.closest?.(".search, .account"));
-        return Boolean(element.closest?.(".glass-target"));
+        return Boolean(element.closest?.(".search"));
       }
     });
 
@@ -297,15 +297,14 @@
       searchOverlayCanvas.width = canvas.width;
       searchOverlayCanvas.height = canvas.height;
       previousSearchRect = null;
-          refreshTargets();
+      refreshTargets();
       markChanged();
     };
 
     const updateSearchOverlay = () => {
       if (!searchOverlayContext) return;
       const ratio = renderer.getPixelRatio();
-      const target = visibleTargets.find(item => item.kind === 0);
-      const rect = target && target;
+      const rect = visibleTargets[0];
       if (previousSearchRect) {
         searchOverlayContext.clearRect(
           previousSearchRect.left * ratio,
@@ -357,7 +356,7 @@
 
         uniforms.uRect.value.set(target.left, target.top, target.width, target.height);
         uniforms.uRadius.value = target.radius;
-        uniforms.uKind.value = target.kind;
+        uniforms.uKind.value = 0;
         renderer.setScissor(left, window.innerHeight - bottom, right - left, bottom - top);
         renderer.render(scene, camera);
       }
@@ -387,7 +386,7 @@
 
     window.addEventListener("resize", resize, { passive: true });
     window.addEventListener("scroll", () => {
-          uniforms.uScroll.value.set(window.scrollX, window.scrollY);
+      uniforms.uScroll.value.set(window.scrollX, window.scrollY);
       updateRects();
     }, { passive: true });
     window.addEventListener("load", markChanged, { once: true });
