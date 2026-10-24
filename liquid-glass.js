@@ -1,13 +1,10 @@
 (() => {
   if (!window.THREE || !window.html2canvas) return;
-  const page = document.querySelector(".page");
-  if (!page) return;
-
   const MAX_TEXTURE_SIZE = 4096;
   const canvas = document.createElement("canvas");
   canvas.id = "liquidGlassCanvas";
   canvas.setAttribute("aria-hidden", "true");
-  page.prepend(canvas);
+  document.body.appendChild(canvas);
 
   const searchOverlayCanvas = document.createElement("canvas");
   searchOverlayCanvas.id = "liquidGlassSearchOverlay";
