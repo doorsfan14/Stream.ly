@@ -562,3 +562,13 @@ input:focus-visible {
     z-index: 2;
   }
 }
+
+#liquidGlassSearchOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 19;
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+}
