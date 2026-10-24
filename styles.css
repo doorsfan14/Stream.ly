@@ -226,8 +226,9 @@ input:focus-visible {
 .search {
   position: fixed;
   z-index: 20;
-  left: calc(50% - min(24.21875vw, calc(50vw - 12px)));
+  left: calc(50% - .3645833cqi);
   bottom: clamp(10px, 1.1458333cqi, 22px);
+  transform: translateX(-50%);
   width: min(48.4375cqi, calc(100vw - 24px));
   max-width: 930px;
   height: clamp(44px, 2.7604167cqi, 53px);
@@ -465,8 +466,9 @@ input:focus-visible {
   }
 
   .search {
-    left: 16px;
+    left: 50%;
     bottom: 12px;
+    transform: translateX(-50%);
     width: calc(100vw - 32px);
     max-width: none;
     height: 48px;
@@ -504,41 +506,4 @@ input:focus-visible {
     white-space: normal;
     text-align: center;
   }
-}
-
-
-
-#liquidGlassCanvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 1;
-  display: block;
-  width: 100vw;
-  height: 100vh;
-  opacity: 0;
-  pointer-events: none;
-}
-
-#liquidGlassSearchOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: 19;
-  display: block;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-}
-
-
-.search > input,
-.search > .stars,
-.search > button {
-  z-index: 1;
-}
-
-.glass-ready .search,
-.glass-ready .search button {
-  background: transparent !important;
-  border-color: transparent !important;
 }
