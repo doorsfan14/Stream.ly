@@ -8,7 +8,6 @@
   canvas.id = "liquidGlassCanvas";
   canvas.setAttribute("aria-hidden", "true");
   page.prepend(canvas);
-  canvas.style.top = window.scrollY + "px";
 
   const searchOverlayCanvas = document.createElement("canvas");
   searchOverlayCanvas.id = "liquidGlassSearchOverlay";
@@ -298,8 +297,7 @@
       searchOverlayCanvas.width = canvas.width;
       searchOverlayCanvas.height = canvas.height;
       previousSearchRect = null;
-      canvas.style.top = window.scrollY + "px";
-      refreshTargets();
+          refreshTargets();
       markChanged();
     };
 
@@ -389,8 +387,7 @@
 
     window.addEventListener("resize", resize, { passive: true });
     window.addEventListener("scroll", () => {
-      canvas.style.top = window.scrollY + "px";
-      uniforms.uScroll.value.set(window.scrollX, window.scrollY);
+          uniforms.uScroll.value.set(window.scrollX, window.scrollY);
       updateRects();
     }, { passive: true });
     window.addEventListener("load", markChanged, { once: true });
