@@ -141,7 +141,7 @@
     document.body.classList.add("glass-ready");
 
     const getTargets = () => {
-      const next = [...document.querySelectorAll(".search, .thumbnail, .account, .tab.active")];
+      const next = [...document.querySelectorAll(".search, .thumbnail, .account")];
       document.querySelectorAll(".glass-target").forEach(element => {
         if (!next.includes(element)) element.classList.remove("glass-target");
       });
