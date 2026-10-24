@@ -8,13 +8,13 @@
   document.body.appendChild(canvas);
 
   let renderer;
-  let material;
   let backdropTexture;
-  let raf = 0;
-  let captureTimer = 0;
+  let frame = 0;
+  let captureFrame = 0;
   let capturing = false;
-  let recapture = false;
-  let lastTime = 0;
+  let captureDirty = true;
+  let changeVersion = 0;
+  let targets = [];
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const scene = new THREE.Scene();
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -46,7 +46,7 @@
       uRadii: { value: new Float32Array(MAX_GLASS) }
     };
 
-    material = new THREE.ShaderMaterial({
+    const material = new THREE.ShaderMaterial({
       transparent: true,
       depthTest: false,
       depthWrite: false,
@@ -87,7 +87,7 @@
             vec2 halfSize = candidate.zw * 0.5;
             vec2 centered = screen - candidate.xy - halfSize;
             float d = roundedSdf(centered, halfSize, uRadii[i]);
-            if (d <= 0.0) {
+            if (d <= 0.8) {
               rect = candidate;
               radius = uRadii[i];
               distanceToEdge = d;
@@ -103,10 +103,13 @@
 
           vec2 halfSize = rect.zw * 0.5;
           vec2 centered = screen - rect.xy - halfSize;
-          vec2 normal = normalize(vec2(
+          vec2 gradient = vec2(
             roundedSdf(centered + vec2(1.0, 0.0), halfSize, radius) - roundedSdf(centered - vec2(1.0, 0.0), halfSize, radius),
             roundedSdf(centered + vec2(0.0, 1.0), halfSize, radius) - roundedSdf(centered - vec2(0.0, 1.0), halfSize, radius)
-          ));
+          );
+          float normalLength = max(length(gradient), 0.0001);
+          vec2 normal = gradient / normalLength;
+          float coverage = 1.0 - smoothstep(-0.8, 0.8, distanceToEdge);
           float edge = smoothstep(-8.0, -0.5, distanceToEdge);
           float lens = 1.0 - smoothstep(0.0, max(halfSize.x, halfSize.y), length(centered));
           vec2 ripple = vec2(
@@ -132,7 +135,7 @@
 
           color = mix(color, vec3(1.0, 0.965, 0.985), 0.065 + edge * 0.08);
           color += vec3(1.0, 0.95, 0.99) * (specular * 0.72 + lowerRim * 0.2 + glint);
-          gl_FragColor = vec4(color, 1.0);
+          gl_FragColor = vec4(color, coverage);
         }
       `
     });
@@ -140,18 +143,18 @@
     scene.add(new THREE.Mesh(geometry, material));
     document.body.classList.add("glass-ready");
 
-    const getTargets = () => {
+    const refreshTargets = () => {
       const next = [...document.querySelectorAll(".search, .thumbnail, .account")];
-      document.querySelectorAll(".glass-target").forEach(element => {
+      for (const element of targets) {
         if (!next.includes(element)) element.classList.remove("glass-target");
-      });
-      next.forEach(element => element.classList.add("glass-target"));
-      return next;
+      }
+      for (const element of next) element.classList.add("glass-target");
+      targets = next.slice(0, MAX_GLASS);
+      updateRects();
     };
 
     const updateRects = () => {
-      const targets = getTargets().slice(0, MAX_GLASS);
-      uniforms.uCount.value = targets.length;
+      let count = 0;
       for (let i = 0; i < MAX_GLASS; i++) {
         if (i >= targets.length) {
           uniforms.uRects.value[i].set(0, 0, 0, 0);
@@ -160,54 +163,79 @@
         }
         const element = targets[i];
         const box = element.getBoundingClientRect();
+        if (!box.width || !box.height || getComputedStyle(element).display === "none") {
+          uniforms.uRects.value[i].set(0, 0, 0, 0);
+          uniforms.uRadii.value[i] = 0;
+          continue;
+        }
         const css = getComputedStyle(element);
-        uniforms.uRects.value[i].set(box.left, box.top, box.width, box.height);
-        uniforms.uRadii.value[i] = Math.max(0, Math.min(
+        uniforms.uRects.value[count].set(box.left, box.top, box.width, box.height);
+        uniforms.uRadii.value[count] = Math.max(0, Math.min(
           parseFloat(css.borderTopLeftRadius) || 0,
           box.width / 2,
           box.height / 2
         ));
+        count++;
       }
+      uniforms.uCount.value = count;
+    };
+
+    const queueBackdrop = () => {
+      captureDirty = true;
+      if (capturing || captureFrame) return;
+      captureFrame = window.requestAnimationFrame(() => {
+        captureFrame = 0;
+        updateBackdrop();
+      });
+    };
+
+    const markChanged = () => {
+      changeVersion++;
+      queueBackdrop();
     };
 
     const updateBackdrop = async () => {
-      if (capturing) {
-        recapture = true;
-        return;
-      }
+      if (capturing || !captureDirty) return;
       capturing = true;
-      do {
-        recapture = false;
-        try {
-          const scale = renderer.getPixelRatio();
-          const screenshot = await window.html2canvas(document.documentElement, {
-            backgroundColor: null,
-            scale,
-            width: window.innerWidth,
-            height: window.innerHeight,
-            windowWidth: window.innerWidth,
-            windowHeight: window.innerHeight,
-            scrollX: -window.scrollX,
-            scrollY: -window.scrollY,
-            useCORS: true,
-            logging: false,
-            ignoreElements: element => element.id === "liquidGlassCanvas" || element.classList?.contains("glass-target")
-          });
+      captureDirty = false;
+      const version = changeVersion;
+      try {
+        const screenshot = await window.html2canvas(document.documentElement, {
+          backgroundColor: null,
+          scale: Math.min(renderer.getPixelRatio(), 1.25),
+          width: window.innerWidth,
+          height: window.innerHeight,
+          windowWidth: window.innerWidth,
+          windowHeight: window.innerHeight,
+          scrollX: -window.scrollX,
+          scrollY: -window.scrollY,
+          useCORS: true,
+          logging: false,
+          ignoreElements: element =>
+            element.id === "liquidGlassCanvas" ||
+            Boolean(element.closest?.(".glass-target"))
+        });
+        if (version === changeVersion) {
           const nextTexture = new THREE.CanvasTexture(screenshot);
           if ("colorSpace" in nextTexture && THREE.SRGBColorSpace) nextTexture.colorSpace = THREE.SRGBColorSpace;
           else if ("encoding" in nextTexture && THREE.sRGBEncoding) nextTexture.encoding = THREE.sRGBEncoding;
           nextTexture.minFilter = THREE.LinearFilter;
           nextTexture.magFilter = THREE.LinearFilter;
           nextTexture.generateMipmaps = false;
+          nextTexture.needsUpdate = true;
           uniforms.uBackdrop.value = nextTexture;
           const previous = backdropTexture;
           backdropTexture = nextTexture;
           previous.dispose();
-        } catch (error) {
-          console.warn("Stream.ly liquid glass could not refresh its background.", error);
+        } else {
+          captureDirty = true;
         }
-      } while (recapture);
-      capturing = false;
+      } catch (error) {
+        console.warn("Stream.ly liquid glass could not refresh its background.", error);
+      } finally {
+        capturing = false;
+        if (captureDirty) queueBackdrop();
+      }
     };
 
     const resize = () => {
@@ -215,46 +243,76 @@
       renderer.setSize(window.innerWidth, window.innerHeight, false);
       uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
       updateRects();
-      queueBackdrop();
-    };
-
-    const queueBackdrop = () => {
-      clearTimeout(captureTimer);
-      captureTimer = window.setTimeout(updateBackdrop, 130);
+      markChanged();
     };
 
     const render = time => {
       if (document.hidden) {
-        raf = 0;
+        frame = 0;
         return;
       }
       if (!reducedMotion) uniforms.uTime.value = time * 0.001;
       updateRects();
       renderer.render(scene, camera);
-      raf = window.requestAnimationFrame(render);
+      frame = window.requestAnimationFrame(render);
     };
+
+    const observer = new MutationObserver(records => {
+      let layoutChanged = false;
+      for (const record of records) {
+        if (record.type === "childList") {
+          layoutChanged = true;
+          break;
+        }
+        if (record.type === "characterData") {
+          layoutChanged = true;
+          break;
+        }
+        if (record.type === "attributes") {
+          layoutChanged = true;
+          break;
+        }
+      }
+      if (layoutChanged) {
+        refreshTargets();
+        markChanged();
+      }
+    });
+
+    observer.observe(document.body, {
+      subtree: true,
+      childList: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: ["hidden", "style", "src", "aria-pressed", "aria-label"]
+    });
 
     window.addEventListener("resize", resize, { passive: true });
     window.addEventListener("scroll", () => {
       updateRects();
-      queueBackdrop();
+      markChanged();
     }, { passive: true });
-    document.addEventListener("input", queueBackdrop, { passive: true });
+    document.addEventListener("input", markChanged, { passive: true });
     document.addEventListener("click", () => {
       window.requestAnimationFrame(() => {
-        updateRects();
-        queueBackdrop();
+        refreshTargets();
+        markChanged();
       });
     }, { passive: true });
+    window.addEventListener("load", markChanged, { once: true });
+    window.addEventListener("pageshow", markChanged);
     document.addEventListener("visibilitychange", () => {
-      if (!document.hidden && !raf) raf = window.requestAnimationFrame(render);
+      if (!document.hidden) {
+        markChanged();
+        if (!frame) frame = window.requestAnimationFrame(render);
+      }
     });
+    document.addEventListener("load", markChanged, true);
 
-    if (document.fonts?.ready) document.fonts.ready.then(queueBackdrop);
-    window.addEventListener("load", queueBackdrop, { once: true });
-    updateRects();
-    updateBackdrop();
-    raf = window.requestAnimationFrame(render);
+    if (document.fonts?.ready) document.fonts.ready.then(markChanged);
+    refreshTargets();
+    markChanged();
+    frame = window.requestAnimationFrame(render);
   } catch (error) {
     document.body.classList.remove("glass-ready");
     canvas.remove();
