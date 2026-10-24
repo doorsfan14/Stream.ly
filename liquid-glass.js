@@ -11,6 +11,13 @@
   page.prepend(canvas);
   canvas.style.top = window.scrollY + "px";
 
+  const searchOverlayCanvas = document.createElement("canvas");
+  searchOverlayCanvas.id = "liquidGlassSearchOverlay";
+  searchOverlayCanvas.setAttribute("aria-hidden", "true");
+  document.body.appendChild(searchOverlayCanvas);
+  let searchOverlayContext = null;
+  let previousSearchRect = null;
+
   let renderer;
   let backdropTexture;
   let searchBackdropTexture;
@@ -43,6 +50,9 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
     renderer.setSize(window.innerWidth, window.innerHeight, false);
     renderer.setClearColor(0x000000, 0);
+    searchOverlayCanvas.width = canvas.width;
+    searchOverlayCanvas.height = canvas.height;
+    searchOverlayContext = searchOverlayCanvas.getContext("2d", { alpha: true });
 
     const uniforms = {
       uBackdrop: { value: backdropTexture },
@@ -259,7 +269,7 @@
       useCORS: true,
       logging: false,
       ignoreElements: element => {
-        if (element.id === "liquidGlassCanvas" || element.id === "status") return true;
+        if (element.id === "liquidGlassCanvas" || element.id === "liquidGlassSearchOverlay" || element.id === "status") return true;
         if (searchSurface) return Boolean(element.closest?.(".search, .account"));
         return Boolean(element.closest?.(".glass-target"));
       }
@@ -307,9 +317,46 @@
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
       renderer.setSize(window.innerWidth, window.innerHeight, false);
       uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+      searchOverlayCanvas.width = canvas.width;
+      searchOverlayCanvas.height = canvas.height;
+      previousSearchRect = null;
       canvas.style.top = window.scrollY + "px";
       refreshTargets();
       markChanged();
+    };
+
+    const updateSearchOverlay = () => {
+      if (!searchOverlayContext) return;
+      const ratio = renderer.getPixelRatio();
+      const element = document.querySelector(".search");
+      const rect = element?.getBoundingClientRect();
+      if (previousSearchRect) {
+        searchOverlayContext.clearRect(
+          previousSearchRect.left * ratio,
+          previousSearchRect.top * ratio,
+          previousSearchRect.width * ratio,
+          previousSearchRect.height * ratio
+        );
+      }
+      if (!rect || !rect.width || !rect.height) {
+        previousSearchRect = null;
+        return;
+      }
+      const sourceX = rect.left * ratio;
+      const sourceY = rect.top * ratio;
+      const sourceWidth = rect.width * ratio;
+      const sourceHeight = rect.height * ratio;
+      searchOverlayContext.drawImage(
+        canvas,
+        sourceX, sourceY, sourceWidth, sourceHeight,
+        sourceX, sourceY, sourceWidth, sourceHeight
+      );
+      previousSearchRect = {
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height
+      };
     };
 
     const render = time => {
@@ -321,6 +368,7 @@
       if (!reducedMotion) uniforms.uTime.value = time * 0.001;
       updateRects();
       renderer.render(scene, camera);
+      updateSearchOverlay();
       frame = window.requestAnimationFrame(render);
     };
 
@@ -362,6 +410,7 @@
   } catch (error) {
     document.body.classList.remove("glass-ready");
     canvas.remove();
+    searchOverlayCanvas.remove();
     if (renderer) renderer.dispose();
     console.warn("Stream.ly liquid glass is unavailable in this browser.", error);
   }
