@@ -1,7 +1,7 @@
 :root{font-family:"Plus Jakarta Sans",sans-serif;color:#000;font-synthesis:none;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;width:100%}
-body{min-height:100vh;background:#fff;display:flex;justify-content:center;align-items:flex-start}
+body{min-height:100vh;background:#ffb0c8;display:flex;justify-content:center;align-items:flex-start}
 button,input{font:inherit;color:inherit}
 button{cursor:pointer}
 button:focus-visible,input:focus-visible{outline:2px solid #ff657c;outline-offset:2px}
