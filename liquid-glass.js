@@ -11,7 +11,7 @@
   searchOverlayCanvas.setAttribute("aria-hidden", "true");
   const searchForm = document.querySelector(".search");
   if (!searchForm) return;
-  searchForm.prepend(searchOverlayCanvas);
+  document.body.appendChild(searchOverlayCanvas);
 
   let renderer;
   let backdropTexture;
@@ -113,9 +113,9 @@
           vec2 ripple = vec2(
             sin(centered.y * 0.024 + uTime * 0.38),
             cos(centered.x * 0.021 - uTime * 0.31)
-          ) * 0.72;
+          ) * 4.5;
           vec2 radial = centered / max(halfSize, vec2(1.0));
-          vec2 bend = normal * (1.15 + edge * 3.4) + ripple * (0.45 + lens * 0.8) + radial * 0.9;
+          vec2 bend = normal * (6.0 + edge * 17.0) + ripple * (0.65 + lens * 0.85) + radial * (5.0 + lens * 4.0);
           vec2 documentPoint = screen + uScroll;
           vec2 baseUv = vec2(
             documentPoint.x / uDocumentResolution.x,
@@ -128,7 +128,7 @@
           vec2 fringe = vec2(
             normal.x / uDocumentResolution.x,
             -normal.y / uDocumentResolution.y
-          ) * edge * 1.15;
+          ) * edge * 5.0;
 
           vec4 redSample = texture2D(uBackdrop, uv + fringe);
           vec4 greenSample = texture2D(uBackdrop, uv);
@@ -137,13 +137,14 @@
           vec3 color = vec3(redSample.r, greenSample.g, blueSample.b);
           vec2 keyLight = normalize(vec2(-0.66, -0.75));
           vec2 fillLight = normalize(vec2(0.72, 0.69));
-          float specular = pow(max(dot(normal, keyLight), 0.0), 5.0) * edge;
-          float lowerRim = pow(max(dot(normal, fillLight), 0.0), 7.0) * edge;
+          float specular = pow(max(dot(normal, keyLight), 0.0), 4.0) * edge;
+          float lowerRim = pow(max(dot(normal, fillLight), 0.0), 6.0) * edge;
           float glintPosition = sin(uTime * 0.42) * halfSize.x * 0.55;
-          float glint = pow(max(0.0, 1.0 - abs(centered.x - glintPosition) / 2.5), 14.0) * edge * 0.18;
-          color = mix(color, vec3(1.0, 0.965, 0.985), 0.065 + edge * 0.08);
-          color += vec3(1.0, 0.95, 0.99) * (specular * 0.72 + lowerRim * 0.2 + glint);
-          gl_FragColor = vec4(color, coverage * 0.72);
+          float glint = pow(max(0.0, 1.0 - abs(centered.x - glintPosition) / 5.5), 18.0) * edge;
+          float rimReflection = pow(edge, 1.6);
+          color = mix(color, vec3(1.0, 0.965, 0.99), 0.035 + edge * 0.16);
+          color += vec3(1.0, 0.92, 0.985) * (rimReflection * 0.12 + specular * 0.92 + lowerRim * 0.48 + glint * 0.62);
+          gl_FragColor = vec4(color, coverage);
         }
       `
     });
