@@ -144,7 +144,7 @@
           float rimReflection = pow(edge, 1.6);
           color = mix(color, vec3(1.0, 0.965, 0.99), 0.035 + edge * 0.16);
           color += vec3(1.0, 0.92, 0.985) * (rimReflection * 0.12 + specular * 0.92 + lowerRim * 0.48 + glint * 0.62);
-          gl_FragColor = vec4(color, coverage);
+          gl_FragColor = vec4(color, coverage * mix(0.68, 0.88, edge));
         }
       `
     });
