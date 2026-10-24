@@ -507,3 +507,36 @@ input:focus-visible {
     text-align: center;
   }
 }
+
+
+#liquidGlassCanvas {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.account {
+  z-index: 2;
+}
+
+.glass-ready .search,
+.glass-ready .account,
+.glass-ready .thumbnail,
+.glass-ready .search button {
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+.glass-ready .thumbnail {
+  border-radius: 1.6145833cqi;
+}
+
+@media (max-width: 700px) {
+  .glass-ready .thumbnail {
+    border-radius: 16px;
+  }
+}
