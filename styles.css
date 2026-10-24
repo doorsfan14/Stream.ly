@@ -226,9 +226,8 @@ input:focus-visible {
 .search {
   position: fixed;
   z-index: 20;
-  left: calc(50% - .3645833cqi);
+  left: calc(50% - min(24.21875vw, calc(50vw - 12px)));
   bottom: clamp(10px, 1.1458333cqi, 22px);
-  transform: translateX(-50%);
   width: min(48.4375cqi, calc(100vw - 24px));
   max-width: 930px;
   height: clamp(44px, 2.7604167cqi, 53px);
@@ -466,9 +465,8 @@ input:focus-visible {
   }
 
   .search {
-    left: 50%;
+    left: 16px;
     bottom: 12px;
-    transform: translateX(-50%);
     width: calc(100vw - 32px);
     max-width: none;
     height: 48px;
@@ -509,6 +507,7 @@ input:focus-visible {
 }
 
 
+
 #liquidGlassCanvas {
   position: fixed;
   top: 0;
@@ -520,55 +519,28 @@ input:focus-visible {
   pointer-events: none;
 }
 
-.logo,
-.tab {
-  z-index: 2;
-}
-
-.account {
-  z-index: 2;
-}
-
-.glass-ready .video {
-  border-radius: 1.25cqi;
-  background: transparent;
-}
-
-.glass-ready .video h2,
-.glass-ready .video p {
-  z-index: 2;
-}
-
-.glass-ready .search,
-.glass-ready .account,
-.glass-ready .thumbnail,
-.glass-ready .search button {
-  background: transparent !important;
-  border-color: transparent !important;
-}
-
-.glass-ready .thumbnail {
-  border-radius: 1.6145833cqi;
-}
-
-@media (max-width: 700px) {
-  .glass-ready .video {
-    border-radius: 16px;
-  }
-
-  .glass-ready .video h2,
-  .glass-ready .video p {
-    position: relative;
-    z-index: 2;
-  }
-}
-
 #liquidGlassSearchOverlay {
   position: fixed;
   inset: 0;
-  z-index: 19;
+  z-index: 0;
   display: block;
   width: 100vw;
   height: 100vh;
   pointer-events: none;
+}
+
+.search > #liquidGlassSearchOverlay {
+  z-index: 0;
+}
+
+.search > input,
+.search > .stars,
+.search > button {
+  z-index: 1;
+}
+
+.glass-ready .search,
+.glass-ready .search button {
+  background: transparent !important;
+  border-color: transparent !important;
 }
