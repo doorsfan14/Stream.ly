@@ -523,6 +523,16 @@ input:focus-visible {
   z-index: 2;
 }
 
+.glass-ready .video {
+  border-radius: 1.25cqi;
+  background: transparent;
+}
+
+.glass-ready .video h2,
+.glass-ready .video p {
+  z-index: 2;
+}
+
 .glass-ready .search,
 .glass-ready .account,
 .glass-ready .thumbnail,
@@ -536,7 +546,13 @@ input:focus-visible {
 }
 
 @media (max-width: 700px) {
-  .glass-ready .thumbnail {
+  .glass-ready .video {
     border-radius: 16px;
+  }
+
+  .glass-ready .video h2,
+  .glass-ready .video p {
+    position: relative;
+    z-index: 2;
   }
 }
