@@ -25,7 +25,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #ff657c;outline-offse
 .logos{left:37.34375cqi;top:29.1145833cqi;width:24.53125cqi;height:16.71875cqi}
 .rice{left:67.1875cqi;top:28.9583333cqi;width:24.53125cqi;height:16.71875cqi}
 .thumbnail{position:absolute;left:0;top:0;width:23.8020833cqi;height:13.3854167cqi;margin:0;padding:0;display:block;border:0;border-radius:1.6145833cqi;background:#fff;appearance:none;-webkit-appearance:none}
-.video h2{position:absolute;left:0;top:14.1145833cqi;width:23.8020833cqi;margin:0;padding:0;color:#000;font-size:1.25cqi;font-weight:600;line-height:normal;white-space:nowrap;overflow:hidden;text-overflow:clip}
+.video h2{position:absolute;left:0;top:14.1145833cqi;width:23.8020833cqi;margin:0;padding:0;color:#000;font-size:1.25cqi;font-weight:600;line-height:normal;white-space:nowrap}
 .luau h2,.iphone h2,.logos h2,.rice h2{width:24.53125cqi}
 .video p{position:absolute;left:0;top:15.6770833cqi;width:7.96875cqi;height:1.0416667cqi;margin:0;padding:0;color:rgba(0,0,0,.45);font-size:.8333333cqi;font-weight:600;line-height:normal;white-space:nowrap}
 .logos p{width:9.3229167cqi}
