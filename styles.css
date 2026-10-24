@@ -523,16 +523,13 @@ input:focus-visible {
 #liquidGlassSearchOverlay {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: 19;
   display: block;
   width: 100vw;
   height: 100vh;
   pointer-events: none;
 }
 
-.search > #liquidGlassSearchOverlay {
-  z-index: 0;
-}
 
 .search > input,
 .search > .stars,
