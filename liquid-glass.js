@@ -3,7 +3,6 @@
   const page = document.querySelector(".page");
   if (!page) return;
 
-  const MAX_GLASS = 12;
   const MAX_TEXTURE_SIZE = 4096;
   const canvas = document.createElement("canvas");
   canvas.id = "liquidGlassCanvas";
@@ -15,12 +14,12 @@
   searchOverlayCanvas.id = "liquidGlassSearchOverlay";
   searchOverlayCanvas.setAttribute("aria-hidden", "true");
   document.body.appendChild(searchOverlayCanvas);
-  let searchOverlayContext = null;
-  let previousSearchRect = null;
 
   let renderer;
   let backdropTexture;
   let searchBackdropTexture;
+  let searchOverlayContext = null;
+  let previousSearchRect = null;
   let frame = 0;
   let captureFrame = 0;
   let capturing = false;
@@ -28,6 +27,7 @@
   let changeVersion = 0;
   let targets = [];
   let targetRadii = [];
+  let visibleTargets = [];
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const scene = new THREE.Scene();
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -50,6 +50,7 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
     renderer.setSize(window.innerWidth, window.innerHeight, false);
     renderer.setClearColor(0x000000, 0);
+    renderer.autoClear = false;
     searchOverlayCanvas.width = canvas.width;
     searchOverlayCanvas.height = canvas.height;
     searchOverlayContext = searchOverlayCanvas.getContext("2d", { alpha: true });
@@ -63,11 +64,10 @@
         Math.max(document.documentElement.scrollHeight, document.body.scrollHeight, window.innerHeight)
       ) },
       uScroll: { value: new THREE.Vector2(window.scrollX, window.scrollY) },
-      uTime: { value: 0 },
-      uCount: { value: 0 },
-      uRects: { value: Array.from({ length: MAX_GLASS }, () => new THREE.Vector4()) },
-      uRadii: { value: new Float32Array(MAX_GLASS) },
-      uKinds: { value: new Float32Array(MAX_GLASS) }
+      uRect: { value: new THREE.Vector4() },
+      uRadius: { value: 0 },
+      uKind: { value: 1 },
+      uTime: { value: 0 }
     };
 
     const material = new THREE.ShaderMaterial({
@@ -84,17 +84,15 @@
       `,
       fragmentShader: `
         precision highp float;
-        #define MAX_GLASS 12
         uniform sampler2D uBackdrop;
         uniform sampler2D uSearchBackdrop;
         uniform vec2 uResolution;
         uniform vec2 uDocumentResolution;
         uniform vec2 uScroll;
+        uniform vec4 uRect;
+        uniform float uRadius;
+        uniform float uKind;
         uniform float uTime;
-        uniform int uCount;
-        uniform vec4 uRects[MAX_GLASS];
-        uniform float uRadii[MAX_GLASS];
-        uniform float uKinds[MAX_GLASS];
         varying vec2 vUv;
 
         float roundedSdf(vec2 p, vec2 b, float r) {
@@ -104,38 +102,17 @@
 
         void main() {
           vec2 screen = vec2(vUv.x * uResolution.x, (1.0 - vUv.y) * uResolution.y);
-          vec4 rect = vec4(0.0);
-          float radius = 0.0;
-          float kind = 1.0;
-          float distanceToEdge = 9999.0;
-          bool insideGlass = false;
-
-          for (int i = 0; i < MAX_GLASS; i++) {
-            if (i >= uCount) break;
-            vec4 candidate = uRects[i];
-            vec2 halfSize = candidate.zw * 0.5;
-            vec2 centered = screen - candidate.xy - halfSize;
-            float d = roundedSdf(centered, halfSize, uRadii[i]);
-            if (d <= 0.8) {
-              rect = candidate;
-              radius = uRadii[i];
-              kind = uKinds[i];
-              distanceToEdge = d;
-              insideGlass = true;
-              break;
-            }
-          }
-
-          if (!insideGlass) {
+          vec2 halfSize = uRect.zw * 0.5;
+          vec2 centered = screen - uRect.xy - halfSize;
+          float distanceToEdge = roundedSdf(centered, halfSize, uRadius);
+          if (distanceToEdge > 0.8) {
             gl_FragColor = vec4(0.0);
             return;
           }
 
-          vec2 halfSize = rect.zw * 0.5;
-          vec2 centered = screen - rect.xy - halfSize;
           vec2 gradient = vec2(
-            roundedSdf(centered + vec2(1.0, 0.0), halfSize, radius) - roundedSdf(centered - vec2(1.0, 0.0), halfSize, radius),
-            roundedSdf(centered + vec2(0.0, 1.0), halfSize, radius) - roundedSdf(centered - vec2(0.0, 1.0), halfSize, radius)
+            roundedSdf(centered + vec2(1.0, 0.0), halfSize, uRadius) - roundedSdf(centered - vec2(1.0, 0.0), halfSize, uRadius),
+            roundedSdf(centered + vec2(0.0, 1.0), halfSize, uRadius) - roundedSdf(centered - vec2(0.0, 1.0), halfSize, uRadius)
           );
           vec2 normal = gradient / max(length(gradient), 0.0001);
           float coverage = 1.0 - smoothstep(-0.8, 0.8, distanceToEdge);
@@ -164,7 +141,7 @@
           vec4 redSample;
           vec4 greenSample;
           vec4 blueSample;
-          if (kind < 0.5) {
+          if (uKind < 0.5) {
             redSample = texture2D(uSearchBackdrop, uv + fringe);
             greenSample = texture2D(uSearchBackdrop, uv);
             blueSample = texture2D(uSearchBackdrop, uv - fringe);
@@ -205,7 +182,7 @@
         if (!next.includes(element)) element.classList.remove("glass-target");
       }
       for (const element of next) element.classList.add("glass-target");
-      targets = next.slice(0, MAX_GLASS);
+      targets = next;
       targetRadii = targets.map(element => {
         const radius = parseFloat(getComputedStyle(element).borderTopLeftRadius) || 0;
         const box = element.getBoundingClientRect();
@@ -215,21 +192,22 @@
     };
 
     const updateRects = () => {
-      let count = 0;
+      visibleTargets = [];
       for (let i = 0; i < targets.length; i++) {
         const box = targets[i].getBoundingClientRect();
         if (!box.width || !box.height) continue;
-        uniforms.uRects.value[count].set(box.left, box.top, box.width, box.height);
-        uniforms.uRadii.value[count] = targetRadii[i] || 0;
-        uniforms.uKinds.value[count] = targets[i].matches(".search") ? 0 : 1;
-        count++;
+        visibleTargets.push({
+          element: targets[i],
+          left: box.left,
+          top: box.top,
+          right: box.right,
+          bottom: box.bottom,
+          width: box.width,
+          height: box.height,
+          radius: targetRadii[i] || 0,
+          kind: targets[i].matches(".search") ? 0 : 1
+        });
       }
-      for (let i = count; i < MAX_GLASS; i++) {
-        uniforms.uRects.value[i].set(0, 0, 0, 0);
-        uniforms.uRadii.value[i] = 0;
-        uniforms.uKinds.value[i] = 1;
-      }
-      uniforms.uCount.value = count;
     };
 
     const buildTexture = screenshot => {
@@ -328,8 +306,8 @@
     const updateSearchOverlay = () => {
       if (!searchOverlayContext) return;
       const ratio = renderer.getPixelRatio();
-      const element = document.querySelector(".search");
-      const rect = element?.getBoundingClientRect();
+      const target = visibleTargets.find(item => item.kind === 0);
+      const rect = target && target;
       if (previousSearchRect) {
         searchOverlayContext.clearRect(
           previousSearchRect.left * ratio,
@@ -367,7 +345,26 @@
       uniforms.uScroll.value.set(window.scrollX, window.scrollY);
       if (!reducedMotion) uniforms.uTime.value = time * 0.001;
       updateRects();
-      renderer.render(scene, camera);
+
+      renderer.setScissorTest(false);
+      renderer.clear(true, true, true);
+      renderer.setScissorTest(true);
+      const ratio = renderer.getPixelRatio();
+      for (let i = visibleTargets.length - 1; i >= 0; i--) {
+        const target = visibleTargets[i];
+        const left = Math.max(0, Math.floor(target.left * ratio) - 1);
+        const top = Math.max(0, Math.floor(target.top * ratio) - 1);
+        const right = Math.min(canvas.width, Math.ceil(target.right * ratio) + 1);
+        const bottom = Math.min(canvas.height, Math.ceil(target.bottom * ratio) + 1);
+        if (right <= left || bottom <= top) continue;
+
+        uniforms.uRect.value.set(target.left, target.top, target.width, target.height);
+        uniforms.uRadius.value = target.radius;
+        uniforms.uKind.value = target.kind;
+        renderer.setScissor(left, canvas.height - bottom, right - left, bottom - top);
+        renderer.render(scene, camera);
+      }
+      renderer.setScissorTest(false);
       updateSearchOverlay();
       frame = window.requestAnimationFrame(render);
     };
