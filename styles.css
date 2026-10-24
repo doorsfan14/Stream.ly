@@ -510,9 +510,9 @@ input:focus-visible {
 
 
 #liquidGlassCanvas {
-  position: absolute;
+  position: fixed;
   top: 0;
-  left: calc(50% - 50vw);
+  left: 0;
   z-index: 1;
   display: block;
   width: 100vw;
