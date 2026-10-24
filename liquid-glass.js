@@ -15,6 +15,7 @@
   let captureDirty = true;
   let changeVersion = 0;
   let targets = [];
+  let targetRadii = [];
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const scene = new THREE.Scene();
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -144,38 +145,35 @@
     document.body.classList.add("glass-ready");
 
     const refreshTargets = () => {
-      const next = [...document.querySelectorAll(".search, .video, .account")];
+      const next = [...document.querySelectorAll(".search, .video, .account")].sort((a, b) => {
+        const priority = element => element.matches(".search") ? 0 : element.matches(".account") ? 1 : 2;
+        return priority(a) - priority(b);
+      });
       for (const element of targets) {
         if (!next.includes(element)) element.classList.remove("glass-target");
       }
       for (const element of next) element.classList.add("glass-target");
       targets = next.slice(0, MAX_GLASS);
+      targetRadii = targets.map(element => {
+        const radius = parseFloat(getComputedStyle(element).borderTopLeftRadius) || 0;
+        const box = element.getBoundingClientRect();
+        return Math.max(0, Math.min(radius, box.width / 2, box.height / 2));
+      });
       updateRects();
     };
 
     const updateRects = () => {
       let count = 0;
-      for (let i = 0; i < MAX_GLASS; i++) {
-        if (i >= targets.length) {
-          uniforms.uRects.value[i].set(0, 0, 0, 0);
-          uniforms.uRadii.value[i] = 0;
-          continue;
-        }
-        const element = targets[i];
-        const box = element.getBoundingClientRect();
-        if (!box.width || !box.height || getComputedStyle(element).display === "none") {
-          uniforms.uRects.value[i].set(0, 0, 0, 0);
-          uniforms.uRadii.value[i] = 0;
-          continue;
-        }
-        const css = getComputedStyle(element);
+      for (let i = 0; i < targets.length; i++) {
+        const box = targets[i].getBoundingClientRect();
+        if (!box.width || !box.height) continue;
         uniforms.uRects.value[count].set(box.left, box.top, box.width, box.height);
-        uniforms.uRadii.value[count] = Math.max(0, Math.min(
-          parseFloat(css.borderTopLeftRadius) || 0,
-          box.width / 2,
-          box.height / 2
-        ));
+        uniforms.uRadii.value[count] = targetRadii[i] || 0;
         count++;
+      }
+      for (let i = count; i < MAX_GLASS; i++) {
+        uniforms.uRects.value[i].set(0, 0, 0, 0);
+        uniforms.uRadii.value[i] = 0;
       }
       uniforms.uCount.value = count;
     };
@@ -242,7 +240,7 @@
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
       renderer.setSize(window.innerWidth, window.innerHeight, false);
       uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
-      updateRects();
+      refreshTargets();
       markChanged();
     };
 
